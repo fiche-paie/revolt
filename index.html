@@ -1,1 +1,2537 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVOLTé - Expérience bancaire</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: #0c0e29;
+            color: white;
+            overflow-x: hidden;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Écran de chargement avec bulle */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c0e29 0%, #1a1d4e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease;
+        }
+        
+        .app-bubble {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5d00ff 0%, #8a2be2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(93, 0, 255, 0.4);
+            animation: pulse 2s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); box-shadow: 0 10px 30px rgba(93, 0, 255, 0.4); }
+            to { transform: scale(1.05); box-shadow: 0 15px 40px rgba(93, 0, 255, 0.6); }
+        }
+        
+        .app-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff3366, #ff9933);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            color: #a0a5d6;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+        
+        .loading-text {
+            margin-top: 30px;
+            font-size: 1rem;
+            color: #8a8fc3;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Écrans de connexion/inscription */
+        .auth-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c0e29 0%, #1a1d4e 100%);
+            padding: 40px 30px;
+            display: none;
+            flex-direction: column;
+            z-index: 900;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .auth-logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff3366, #ff9933);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .auth-subtitle {
+            color: #a0a5d6;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .input-label {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+            font-weight: 500;
+        }
+        
+        .input-field {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: #5d00ff;
+            background-color: rgba(93, 0, 255, 0.1);
+        }
+        
+        .auth-button {
+            background: linear-gradient(90deg, #5d00ff, #8a2be2);
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(93, 0, 255, 0.3);
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 25px;
+            color: #a0a5d6;
+        }
+        
+        .auth-link {
+            color: #ff3366;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Pages (toutes cachées par défaut) */
+        .page {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            background: #0c0e29;
+            position: relative;
+        }
+        
+        .page.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Header commun à toutes les pages */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 15px;
+            background: linear-gradient(135deg, #0c0e29 0%, #1a1d4e 100%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        
+        .back-button {
+            font-size: 1.2rem;
+            color: #a0a5d6;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .profile-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5d00ff 0%, #8a2be2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Page Accueil (Dashboard) - Euros uniquement */
+        .home-balance-section {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #1a1d4e 0%, #2a2f7a 100%);
+            border-radius: 20px;
+            margin: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .balance-label {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            font-size: 3.2rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        
+        .balance-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .balance-action {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 18px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .balance-action:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+        
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        
+        .charger .action-icon {
+            background: rgba(93, 0, 255, 0.2);
+            color: #9d6dff;
+        }
+        
+        .recevoir .action-icon {
+            background: rgba(255, 51, 102, 0.2);
+            color: #ff6699;
+        }
+        
+        .swapp .action-icon {
+            background: rgba(51, 204, 102, 0.2);
+            color: #66ff99;
+        }
+        
+        .action-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Widget double solde sur l'accueil */
+        .dual-balance-widget {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 0 20px 20px;
+        }
+        
+        .dual-balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .dual-balance-title {
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+        
+        .dual-balance-refresh {
+            color: #a0a5d6;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .dual-balance-refresh:hover {
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .dual-balance-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .balance-item-dual {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+        
+        .balance-currency {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .currency-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .eur-logo {
+            background: rgba(0, 123, 255, 0.2);
+            color: #4dabff;
+        }
+        
+        .usdt-logo {
+            background: rgba(38, 161, 123, 0.2);
+            color: #26a17b;
+        }
+        
+        .currency-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .currency-fullname {
+            font-size: 0.8rem;
+            color: #a0a5d6;
+        }
+        
+        .balance-value-dual {
+            text-align: right;
+        }
+        
+        .balance-amount-dual {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .balance-change {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+        }
+        
+        .positive {
+            color: #66ff99;
+        }
+        
+        .negative {
+            color: #ff6699;
+        }
+        
+        /* Page Portefeuille - USDT avec graphique */
+        .wallet-header {
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #1a1d4e 0%, #2a2f7a 100%);
+            border-radius: 20px;
+            margin: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .wallet-balance-label {
+            font-size: 0.8rem;
+            color: #a0a5d6;
+            margin-bottom: 20px;
+        }
+        
+        .wallet-balance-amount {
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: #66ff99;
+            margin-bottom: 20px;
+        }
+        
+        .wallet-balance-eur {
+            font-size: 1.1rem;
+            color: #a0a5d6;
+        }
+        
+        /* Widget Crypto dans portefeuille */
+        .crypto-widget {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 0 20px 25px;
+        }
+        
+        .crypto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .crypto-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .crypto-subtitle {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+        }
+        
+        .chart-container {
+            height: 180px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Historique des transactions sous le graphique */
+        .transaction-history {
+            margin: 25px 20px;
+        }
+        
+        .transaction-history h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .transaction-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .transaction-details h4 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .transaction-details p {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+        }
+        
+        .transaction-amount {
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        /* Contenu des pages */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 0 80px;
+        }
+        
+        /* Page charger */
+        .charger-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .charger-option {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .charger-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+        }
+        
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+        
+        .stripe .option-icon {
+            background: rgba(0, 123, 255, 0.2);
+            color: #4dabff;
+        }
+        
+        .option-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .option-info p {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+        }
+        
+        .amount-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .amount-option {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .amount-option:hover, .amount-option.selected {
+            background: rgba(93, 0, 255, 0.2);
+            border: 1px solid #5d00ff;
+        }
+        
+        .amount {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .amount-label {
+            font-size: 0.8rem;
+            color: #a0a5d6;
+        }
+        
+        /* Bouton Valider plus grand */
+        .validate-button {
+            background: linear-gradient(90deg, #5d00ff, #8a2be2);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 25px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            transition: all 0.3s;
+        }
+        
+        .validate-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(93, 0, 255, 0.3);
+        }
+        
+        /* Page Recevoir */
+        .receive-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .qr-code {
+            width: 220px;
+            height: 220px;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .qr-code::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 48%, #000 50%, transparent 52%);
+            background-size: 10px 10px;
+        }
+        
+        .qr-code::after {
+            content: 'REVOLTé';
+            position: absolute;
+            bottom: 10px;
+            font-weight: 600;
+            color: #000;
+            font-size: 0.9rem;
+        }
+        
+        .wallet-address {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            width: 100%;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .address-title {
+            font-size: 0.9rem;
+            color: #a0a5d6;
+            margin-bottom: 10px;
+        }
+        
+        .address-value {
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-bottom: 15px;
+        }
+        
+        .copy-button {
+            background: rgba(93, 0, 255, 0.2);
+            color: #9d6dff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+        
+        .crypto-selector {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .crypto-option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .crypto-option:hover, .crypto-option.selected {
+            background: rgba(93, 0, 255, 0.2);
+        }
+        
+        .crypto-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .usdt-logo {
+            background: #26a17b;
+            color: white;
+        }
+        
+        /* Page Swapp */
+        .swap-container {
+            margin-top: 20px;
+        }
+        
+        .swap-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .swap-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .swap-amount {
+            flex: 1;
+        }
+        
+        .swap-amount input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 600;
+            outline: none;
+        }
+        
+        .swap-currency {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .swap-center {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .swap-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(90deg, #5d00ff, #8a2be2);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .swap-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            color: #a0a5d6;
+            font-size: 0.9rem;
+        }
+        
+        .swap-button-large {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(90deg, #5d00ff, #8a2be2);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        /* Page Paramètres */
+        .settings-list {
+            margin-top: 20px;
+        }
+        
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+        
+        .setting-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .setting-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(93, 0, 255, 0.2);
+            color: #9d6dff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+        
+        .setting-details h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .setting-details p {
+            font-size: 0.8rem;
+            color: #a0a5d6;
+        }
+        
+        .logout-button {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 51, 102, 0.2);
+            border: 1px solid rgba(255, 51, 102, 0.5);
+            border-radius: 16px;
+            color: #ff6699;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* Menu du bas */
+        .bottom-menu {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-radius: 25px 25px 0 0;
+            z-index: 200;
+        }
+        
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #a0a5d6;
+            flex: 1;
+        }
+        
+        .menu-item.active {
+            color: #ff3366;
+        }
+        
+        .menu-item:hover {
+            color: white;
+        }
+        
+        .menu-icon {
+            font-size: 1.3rem;
+        }
+        
+        .menu-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            display: none;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1d4e 0%, #2a2f7a 100%);
+            border-radius: 25px;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #a0a5d6;
+        }
+        
+        .free-badge {
+            background: linear-gradient(90deg, #ff3366, #ff9933);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(90deg, #5d00ff, #8a2be2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1002;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Écran de chargement avec bulle -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="app-bubble">
+                <div class="app-name">RÉVOLTE!</div>
+            </div>
+            <div class="tagline">Expérience bancaire intuitive</div>
+            <div class="loading-text">Chargement...</div>
+        </div>
+        
+        <!-- Écran de connexion -->
+        <div class="auth-screen fade-in" id="loginScreen" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-logo">RÉVOLTE!</div>
+                <div class="auth-title">Bon retour !</div>
+                <div class="auth-subtitle">Connectez-vous pour accéder à votre compte</div>
+            </div>
+            <div class="auth-form">
+                <div class="input-group">
+                    <label class="input-label">E-mail</label>
+                    <input type="email" class="input-field" id="loginEmail" placeholder="votre@email.com">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Mot de passe</label>
+                    <input type="password" class="input-field" id="loginPassword" placeholder="Votre mot de passe">
+                </div>
+                <button class="auth-button" id="loginButton">Se connecter</button>
+            </div>
+            <div class="auth-switch">
+                Vous n'avez pas de compte ? <span class="auth-link" id="showRegister">S'inscrire</span>
+            </div>
+        </div>
+        
+        <!-- Écran d'inscription -->
+        <div class="auth-screen" id="registerScreen">
+            <div class="auth-header">
+                <div class="auth-logo">RÉVOLTE!</div>
+                <div class="auth-title">Rejoignez REVOLTé</div>
+                <div class="auth-subtitle">Découvrez une nouvelle plateforme de finance</div>
+            </div>
+            <div class="auth-form">
+                <div class="input-group">
+                    <label class="input-label">Nom complet</label>
+                    <input type="text" class="input-field" id="registerName" placeholder="Votre nom">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">E-mail</label>
+                    <input type="email" class="input-field" id="registerEmail" placeholder="votre@email.com">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Mot de passe</label>
+                    <input type="password" class="input-field" id="registerPassword" placeholder="Créez un mot de passe">
+                </div>
+                <button class="auth-button" id="registerButton">Créer un compte</button>
+            </div>
+            <div class="auth-switch">
+                Vous avez déjà un compte ? <span class="auth-link" id="showLogin">Se connecter</span>
+            </div>
+        </div>
+        
+        <!-- Page Accueil (Dashboard) - Euros -->
+        <div class="page" id="homePage">
+            <div class="header">
+                <div class="greeting">
+                    <h1 id="userGreeting">Bonjour,</h1>
+                    <p>Votre compte en euros</p>
+                </div>
+                <div class="profile-icon" id="profileIcon"></div>
+            </div>
+            
+            <div class="page-content">
+                <!-- Solde en euros -->
+                <div class="home-balance-section">
+                    <div class="balance-label">Solde EUR</div>
+                    <div class="balance-amount" id="eurBalance">0,00 €</div>
+                    <div class="balance-actions">
+                        <div class="balance-action charger" data-page="charger">
+                            <div class="action-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="action-name">Charger</div>
+                        </div>
+                        <div class="balance-action recevoir" data-page="recevoir">
+                            <div class="action-icon">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="action-name">Recevoir</div>
+                        </div>
+                        <div class="balance-action swapp" data-page="swapp">
+                            <div class="action-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="action-name">Échanger</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Widget double solde -->
+                <div class="dual-balance-widget">
+                    <div class="dual-balance-header">
+                        <div class="dual-balance-title">Vos soldes</div>
+                        <div class="dual-balance-refresh" id="refreshBalances">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                    </div>
+                    <div class="dual-balance-content">
+                        <div class="balance-item-dual">
+                            <div class="balance-currency">
+                                <div class="currency-logo eur-logo">
+                                    <i class="fas fa-euro-sign"></i>
+                                </div>
+                                <div>
+                                    <div class="currency-name">EUR</div>
+                                    <div class="currency-fullname">Euro</div>
+                                </div>
+                            </div>
+                            <div class="balance-value-dual">
+                                <div class="balance-amount-dual" id="dualEurBalance">0,00 €</div>
+                                <div class="balance-change">Solde principal</div>
+                            </div>
+                        </div>
+                        
+                        <div class="balance-item-dual">
+                            <div class="balance-currency">
+                                <div class="currency-logo usdt-logo">$</div>
+                                <div>
+                                    <div class="currency-name">USDT</div>
+                                    <div class="currency-fullname">Tether</div>
+                                </div>
+                            </div>
+                            <div class="balance-value-dual">
+                                <div class="balance-amount-dual" id="dualUsdtBalance">0,00</div>
+                                <div class="balance-change positive">+0,00%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transactions récentes -->
+                <div style="margin: 0 20px;">
+                    <h3 style="margin-bottom: 15px;">Transactions récentes</h3>
+                    <div class="transaction-list" id="recentTransactions">
+                        <!-- Les transactions seront ajoutées dynamiquement -->
+                        <div style="text-align: center; padding: 30px; color: #a0a5d6;">
+                            <i class="fas fa-exchange-alt" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                            <p>Aucune transaction pour le moment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Portefeuille - USDT avec graphique -->
+        <div class="page" id="portefeuillePage">
+            <div class="header">
+                <div class="back-button" data-page="home">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="page-title">Portefeuille USDT</div>
+                <div class="profile-icon" id="walletProfileIcon"></div>
+            </div>
+            
+            <div class="page-content">
+                <!-- Solde USDT réduit à la même largeur que le widget graphique -->
+                <div class="wallet-header">
+                    <div class="wallet-balance-label">Votre portefeuille USDT</div>
+                    <div class="wallet-balance-amount" id="walletUsdtBalance">0,00 USDT</div>
+                    <div class="wallet-balance-eur" id="walletUsdtEurValue">≈ 0,00 €</div>
+                </div>
+                
+                <!-- Widget graphique USDT -->
+                <div class="crypto-widget">
+                    <div class="crypto-header">
+                        <div>
+                            <div class="crypto-title">USDT (Tether)</div>
+                            <div class="crypto-subtitle">Cours en temps réel</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.3rem; font-weight: 600; color: #66ff99;" id="usdtPrice">1,00 $</div>
+                            <div style="font-size: 0.9rem; color: #66ff99;" id="usdtChange">+0,00%</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas class="chart" id="cryptoChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Historique des transactions -->
+                <div class="transaction-history">
+                    <h3>Historique des transactions USDT</h3>
+                    <div class="transaction-list" id="usdtTransactions">
+                        <!-- Les transactions USDT seront ajoutées dynamiquement -->
+                        <div style="text-align: center; padding: 30px; color: #a0a5d6;">
+                            <i class="fas fa-wallet" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                            <p>Aucune transaction USDT pour le moment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Charger - Stripe uniquement -->
+        <div class="page" id="chargerPage">
+            <div class="header">
+                <div class="back-button" data-page="home">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="page-title">Charger EUR</div>
+                <div class="profile-icon" id="chargerProfileIcon"></div>
+            </div>
+            
+            <div class="page-content">
+                <div style="text-align: center; margin: 20px 20px 30px;">
+                    <div style="font-size: 0.9rem; color: #a0a5d6; margin-bottom: 10px;">Chargez votre compte en euros via Stripe</div>
+                    <div style="font-size: 2rem; font-weight: 700; color: #66ff99;" id="chargerCurrentBalance">0,00 €</div>
+                    <div style="font-size: 0.9rem; color: #a0a5d6;">Solde actuel</div>
+                </div>
+                
+                <div class="charger-options" style="margin: 0 20px;">
+                    <div class="charger-option stripe" id="stripeOption">
+                        <div class="option-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="option-info">
+                            <h3>Carte bancaire (Stripe) <span class="free-badge">SÉCURISÉ</span></h3>
+                            <p>Chargez en euros avec votre carte bancaire</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 30px 20px 15px;">Montant rapide</h3>
+                <div class="amount-options" style="margin: 0 20px;">
+                    <div class="amount-option" data-amount="50">
+                        <div class="amount">50 €</div>
+                        <div class="amount-label">Standard</div>
+                    </div>
+                    <div class="amount-option" data-amount="100">
+                        <div class="amount">100 €</div>
+                        <div class="amount-label">Populaire</div>
+                    </div>
+                    <div class="amount-option" data-amount="200">
+                        <div class="amount">200 €</div>
+                        <div class="amount-label">Économique</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 40px 20px 0;">
+                    <h3 style="margin-bottom: 15px;">Montant personnalisé</h3>
+                    <div style="display: flex; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 5px 5px 5px 20px;">
+                        <div style="font-weight: 600; margin-right: 10px;">€</div>
+                        <input type="number" id="customAmount" placeholder="0,00" style="flex: 1; background: transparent; border: none; color: white; font-size: 1.5rem; padding: 15px 0; outline: none;">
+                    </div>
+                    <br>
+                    <!-- Bouton Valider plus grand -->
+                    <button class="validate-button" id="customCharger">
+                        Valider
+                    </button>
+                </div>
+                
+                <div style="margin: 30px 20px; color: #a0a5d6; font-size: 0.8rem; text-align: center;">
+                    <p>Les chargements par carte peuvent entraîner des frais de 1.5%. Le traitement est instantané.</p>
+                    <p style="margin-top: 10px;"><i class="fas fa-lock"></i> Paiement sécurisé par Stripe</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Recevoir -->
+        <div class="page" id="recevoirPage">
+            <div class="header">
+                <div class="back-button" data-page="home">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="page-title">Recevoir</div>
+                <div class="profile-icon" id="receiveProfileIcon"></div>
+            </div>
+            
+            <div class="page-content">
+                <div class="receive-container" style="margin: 0 20px;">
+                    <div class="qr-code">
+                        <!-- QR Code visuel -->
+                    </div>
+                    
+                    <div class="wallet-address">
+                        <div class="address-title">Votre adresse REVOLTé (USDT)</div>
+                        <div class="address-value" id="walletAddress">0x0000000000000000000000000000000000000000</div>
+                        <button class="copy-button" id="copyAddress">
+                            <i class="fas fa-copy"></i> Copier l'adresse
+                        </button>
+                    </div>
+                    
+                    <div class="crypto-selector">
+                        <h3 style="margin-bottom: 15px;">Sélectionner la crypto</h3>
+                        <div class="crypto-option selected" data-crypto="usdt">
+                            <div class="crypto-logo usdt-logo">$</div>
+                            <div>
+                                <div style="font-weight: 600;">USDT (Tether)</div>
+                                <div style="font-size: 0.9rem; color: #a0a5d6;">Ethereum ERC-20</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Swapp -->
+        <div class="page" id="swappPage">
+            <div class="header">
+                <div class="back-button" data-page="home">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="page-title">Échanger</div>
+                <div class="profile-icon" id="swapProfileIcon"></div>
+            </div>
+            
+            <div class="page-content">
+                <div class="swap-container" style="margin: 0 20px;">
+                    <div class="swap-card">
+                        <div class="swap-input">
+                            <div class="swap-amount">
+                                <input type="number" value="0" id="fromAmount" min="0" step="0.01">
+                            </div>
+                            <div class="swap-currency" id="fromCurrency">
+                                <div style="font-weight: 600;">EUR</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="swap-info">
+                            <div>Solde: <span id="fromBalance">€0,00</span></div>
+                            <div>1 EUR = <span id="fromRate">1,00</span> USDT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="swap-center">
+                        <button class="swap-button" id="swapDirection">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="swap-card">
+                        <div class="swap-input">
+                            <div class="swap-amount">
+                                <input type="number" value="0" id="toAmount" readonly>
+                            </div>
+                            <div class="swap-currency" id="toCurrency">
+                                <div style="font-weight: 600;">USDT</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="swap-info">
+                            <div>Solde: <span id="toBalance">0,00 USDT</span></div>
+                            <div>1 USDT = <span id="toRate">0,95</span> EUR</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #a0a5d6;">Taux de change:</span>
+                            <span style="font-weight: 600;" id="exchangeRateDisplay">1 EUR = 1.05 USDT</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #a0a5d6;">Frais (0.5%):</span>
+                            <span style="color: #ff6699;" id="feeAmount">€0,00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #a0a5d6;">Vous recevez:</span>
+                            <span style="font-weight: 600; color: #66ff99;" id="netAmount">0,00 USDT</span>
+                        </div>
+                    </div>
+                    
+                    <button class="swap-button-large" id="confirmSwap">
+                        Confirmer l'échange
+                    </button>
+                    
+                    <div style="margin-top: 30px; color: #a0a5d6; font-size: 0.9rem;">
+                        <p>Taux de change actualisé en temps réel. Les transactions sont traitées instantanément. Frais d'échange: 0.5%.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Paramètres -->
+        <div class="page" id="parametresPage">
+            <div class="header">
+                <div class="back-button" data-page="home">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="page-title">Paramètres</div>
+                <div class="profile-icon" id="settingsProfileIcon"></div>
+            </div>
+            
+            <div class="page-content" style="padding: 0 20px;">
+                <div class="settings-list">
+                    <div class="setting-item" id="profileSetting">
+                        <div class="setting-info">
+                            <div class="setting-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="setting-details">
+                                <h3>Profil</h3>
+                                <p>Gérer vos informations personnelles</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #a0a5d6;"></i>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="setting-details">
+                                <h3>Sécurité</h3>
+                                <p>Authentification à deux facteurs, code PIN</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #a0a5d6;"></i>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="setting-details">
+                                <h3>Notifications</h3>
+                                <p>Gérer les alertes et notifications</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #a0a5d6;"></i>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="setting-details">
+                                <h3>Moyens de paiement</h3>
+                                <p>Cartes bancaires, comptes liés</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #a0a5d6;"></i>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div class="setting-details">
+                                <h3>Apparence</h3>
+                                <p>Mode sombre, thème de l'application</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #a0a5d6;"></i>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div class="setting-details">
+                                <h3>Aide et soutien</h3>
+                                <p>Centre d'aide, contactez-nous</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #a0a5d6;"></i>
+                    </div>
+                </div>
+                
+                <button class="logout-button" id="logoutButton">
+                    <i class="fas fa-sign-out-alt"></i> Se déconnecter
+                </button>
+                
+                <div style="margin-top: 30px; color: #a0a5d6; font-size: 0.8rem; text-align: center;">
+                    <p>REVOLTé v2.1.4 • Une expérience bancaire intuitive</p>
+                    <p>Rechargement crypto gratuit • Découvrez une nouvelle plateforme de financement</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menu du bas -->
+        <div class="bottom-menu">
+            <div class="menu-item active" data-page="home">
+                <div class="menu-icon"><i class="fas fa-home"></i></div>
+                <div class="menu-label">Accueil</div>
+            </div>
+            <div class="menu-item" data-page="portefeuille">
+                <div class="menu-icon"><i class="fas fa-wallet"></i></div>
+                <div class="menu-label">Portefeuille</div>
+            </div>
+            <div class="menu-item" data-page="parametres">
+                <div class="menu-icon"><i class="fas fa-cog"></i></div>
+                <div class="menu-label">Paramètres</div>
+            </div>
+        </div>
+        
+        <!-- Notification -->
+        <div class="notification" id="notification"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // ============================================
+        // BASE DE DONNÉES SIMULÉE
+        // ============================================
+        
+        class Database {
+            constructor() {
+                this.users = JSON.parse(localStorage.getItem('revolte_users')) || [];
+                this.transactions = JSON.parse(localStorage.getItem('revolte_transactions')) || {};
+                this.currentUser = null;
+                this.exchangeRate = 1.05; // 1 EUR = 1.05 USDT
+                this.feePercentage = 0.5; // 0.5% de frais
+            }
+            
+            saveUsers() {
+                localStorage.setItem('revolte_users', JSON.stringify(this.users));
+            }
+            
+            saveTransactions() {
+                localStorage.setItem('revolte_transactions', JSON.stringify(this.transactions));
+            }
+            
+            generateUserId() {
+                return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            generateTransactionId() {
+                return 'tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            generateWalletAddress() {
+                const chars = '0123456789abcdef';
+                let address = '0x';
+                for (let i = 0; i < 40; i++) {
+                    address += chars[Math.floor(Math.random() * chars.length)];
+                }
+                return address;
+            }
+            
+            registerUser(name, email, password) {
+                // Vérifier si l'email existe déjà
+                if (this.users.find(user => user.email === email)) {
+                    return { success: false, message: 'Cet email est déjà utilisé' };
+                }
+                
+                const userId = this.generateUserId();
+                const walletAddress = this.generateWalletAddress();
+                
+                const newUser = {
+                    id: userId,
+                    name: name,
+                    email: email,
+                    password: password, // En production, il faudrait hacher le mot de passe
+                    createdAt: new Date().toISOString(),
+                    balances: {
+                        eur: 0.00,
+                        usdt: 0.00
+                    },
+                    walletAddress: walletAddress,
+                    transactions: []
+                };
+                
+                this.users.push(newUser);
+                this.saveUsers();
+                
+                // Initialiser les transactions pour cet utilisateur
+                this.transactions[userId] = [];
+                this.saveTransactions();
+                
+                return { success: true, user: newUser };
+            }
+            
+            loginUser(email, password) {
+                const user = this.users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    this.currentUser = user;
+                    return { success: true, user: user };
+                } else {
+                    return { success: false, message: 'Email ou mot de passe incorrect' };
+                }
+            }
+            
+            logout() {
+                this.currentUser = null;
+            }
+            
+            getCurrentUser() {
+                return this.currentUser;
+            }
+            
+            updateUserBalance(userId, currency, amount) {
+                const user = this.users.find(u => u.id === userId);
+                if (user) {
+                    if (currency === 'eur') {
+                        user.balances.eur = parseFloat((user.balances.eur + amount).toFixed(2));
+                    } else if (currency === 'usdt') {
+                        user.balances.usdt = parseFloat((user.balances.usdt + amount).toFixed(2));
+                    }
+                    this.saveUsers();
+                    return true;
+                }
+                return false;
+            }
+            
+            addTransaction(userId, type, amount, currency, description, fee = 0) {
+                const transaction = {
+                    id: this.generateTransactionId(),
+                    type: type, // 'deposit', 'withdrawal', 'exchange', 'transfer'
+                    amount: amount,
+                    currency: currency,
+                    description: description,
+                    fee: fee,
+                    timestamp: new Date().toISOString(),
+                    status: 'completed'
+                };
+                
+                if (!this.transactions[userId]) {
+                    this.transactions[userId] = [];
+                }
+                
+                this.transactions[userId].unshift(transaction);
+                this.saveTransactions();
+                
+                // Limiter à 50 transactions maximum
+                if (this.transactions[userId].length > 50) {
+                    this.transactions[userId] = this.transactions[userId].slice(0, 50);
+                }
+                
+                return transaction;
+            }
+            
+            getUserTransactions(userId, limit = 10) {
+                return this.transactions[userId] || [];
+            }
+            
+            calculateExchange(fromAmount, fromCurrency, toCurrency) {
+                let toAmount = 0;
+                
+                if (fromCurrency === 'eur' && toCurrency === 'usdt') {
+                    toAmount = fromAmount * this.exchangeRate;
+                } else if (fromCurrency === 'usdt' && toCurrency === 'eur') {
+                    toAmount = fromAmount / this.exchangeRate;
+                }
+                
+                // Appliquer les frais
+                const fee = toAmount * (this.feePercentage / 100);
+                const netAmount = toAmount - fee;
+                
+                return {
+                    grossAmount: parseFloat(toAmount.toFixed(2)),
+                    fee: parseFloat(fee.toFixed(2)),
+                    netAmount: parseFloat(netAmount.toFixed(2)),
+                    rate: this.exchangeRate
+                };
+            }
+            
+            performExchange(userId, fromAmount, fromCurrency, toCurrency) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) return { success: false, message: 'Utilisateur non trouvé' };
+                
+                // Vérifier le solde
+                if (fromCurrency === 'eur' && user.balances.eur < fromAmount) {
+                    return { success: false, message: 'Solde EUR insuffisant' };
+                }
+                if (fromCurrency === 'usdt' && user.balances.usdt < fromAmount) {
+                    return { success: false, message: 'Solde USDT insuffisant' };
+                }
+                
+                // Calculer l'échange
+                const exchange = this.calculateExchange(fromAmount, fromCurrency, toCurrency);
+                
+                // Mettre à jour les soldes
+                if (fromCurrency === 'eur') {
+                    user.balances.eur = parseFloat((user.balances.eur - fromAmount).toFixed(2));
+                    user.balances.usdt = parseFloat((user.balances.usdt + exchange.netAmount).toFixed(2));
+                } else {
+                    user.balances.usdt = parseFloat((user.balances.usdt - fromAmount).toFixed(2));
+                    user.balances.eur = parseFloat((user.balances.eur + exchange.netAmount).toFixed(2));
+                }
+                
+                this.saveUsers();
+                
+                // Ajouter la transaction
+                const description = `Échange ${fromAmount} ${fromCurrency.toUpperCase()} → ${exchange.netAmount} ${toCurrency.toUpperCase()}`;
+                this.addTransaction(userId, 'exchange', fromAmount, fromCurrency, description, exchange.fee);
+                
+                return {
+                    success: true,
+                    fromAmount: fromAmount,
+                    toAmount: exchange.netAmount,
+                    fee: exchange.fee,
+                    newEurBalance: user.balances.eur,
+                    newUsdtBalance: user.balances.usdt
+                };
+            }
+            
+            simulatePriceChange() {
+                // Simuler une petite variation de prix aléatoire
+                const change = (Math.random() - 0.5) * 0.02; // ±1%
+                this.exchangeRate = parseFloat((this.exchangeRate * (1 + change)).toFixed(4));
+                return this.exchangeRate;
+            }
+        }
+        
+        // ============================================
+        // INITIALISATION DE L'APPLICATION
+        // ============================================
+        
+        const db = new Database();
+        let cryptoChart = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loginScreen = document.getElementById('loginScreen');
+            const registerScreen = document.getElementById('registerScreen');
+            const pages = document.querySelectorAll('.page');
+            const menuItems = document.querySelectorAll('.menu-item');
+            const balanceActions = document.querySelectorAll('.balance-action');
+            
+            // Simuler un chargement de 2 secondes
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    loginScreen.style.display = 'flex';
+                    loginScreen.classList.add('fade-in');
+                }, 800);
+            }, 2000);
+            
+            // ============================================
+            // GESTION DE L'AUTHENTIFICATION
+            // ============================================
+            
+            document.getElementById('showRegister').addEventListener('click', function() {
+                loginScreen.style.display = 'none';
+                registerScreen.style.display = 'flex';
+                registerScreen.classList.add('fade-in');
+            });
+            
+            document.getElementById('showLogin').addEventListener('click', function() {
+                registerScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                loginScreen.classList.add('fade-in');
+            });
+            
+            // Connexion
+            document.getElementById('loginButton').addEventListener('click', function() {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!email || !password) {
+                    showNotification('Veuillez remplir tous les champs', 'error');
+                    return;
+                }
+                
+                const result = db.loginUser(email, password);
+                
+                if (result.success) {
+                    loginScreen.style.display = 'none';
+                    showNotification('Connexion réussie !', 'success');
+                    initializeUserDashboard(result.user);
+                    showPage('home');
+                    initChart();
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            });
+            
+            // Inscription
+            document.getElementById('registerButton').addEventListener('click', function() {
+                const name = document.getElementById('registerName').value.trim();
+                const email = document.getElementById('registerEmail').value.trim();
+                const password = document.getElementById('registerPassword').value;
+                
+                if (!name || !email || !password) {
+                    showNotification('Veuillez remplir tous les champs', 'error');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showNotification('Le mot de passe doit contenir au moins 6 caractères', 'error');
+                    return;
+                }
+                
+                const result = db.registerUser(name, email, password);
+                
+                if (result.success) {
+                    registerScreen.style.display = 'none';
+                    showNotification('Compte créé avec succès !', 'success');
+                    
+                    // Connecter automatiquement l'utilisateur
+                    db.loginUser(email, password);
+                    initializeUserDashboard(result.user);
+                    showPage('home');
+                    initChart();
+                    
+                    // Mettre à jour l'adresse wallet
+                    document.getElementById('walletAddress').textContent = result.user.walletAddress;
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            });
+            
+            // ============================================
+            // FONCTIONS UTILITAIRES
+            // ============================================
+            
+            function showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.style.display = 'block';
+                
+                // Couleur selon le type
+                if (type === 'success') {
+                    notification.style.background = 'linear-gradient(90deg, #26a17b, #66ff99)';
+                } else if (type === 'error') {
+                    notification.style.background = 'linear-gradient(90deg, #ff3366, #ff6699)';
+                } else {
+                    notification.style.background = 'linear-gradient(90deg, #5d00ff, #8a2be2)';
+                }
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+            
+            function formatCurrency(amount, currency = 'eur') {
+                if (currency === 'eur') {
+                    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+                } else {
+                    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' ' + currency.toUpperCase();
+                }
+            }
+            
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+                
+                if (diffMins < 1) {
+                    return 'À l\'instant';
+                } else if (diffMins < 60) {
+                    return `Il y a ${diffMins} min`;
+                } else if (diffHours < 24) {
+                    return `Il y a ${diffHours} h`;
+                } else if (diffDays === 1) {
+                    return 'Hier';
+                } else if (diffDays < 7) {
+                    return `Il y a ${diffDays} jours`;
+                } else {
+                    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                }
+            }
+            
+            function initializeUserDashboard(user) {
+                // Mettre à jour le nom
+                document.getElementById('userGreeting').textContent = `Bonjour, ${user.name.split(' ')[0]}`;
+                
+                // Mettre à jour l'icône de profil
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                document.getElementById('profileIcon').textContent = initials;
+                document.getElementById('walletProfileIcon').textContent = initials;
+                document.getElementById('chargerProfileIcon').textContent = initials;
+                document.getElementById('receiveProfileIcon').textContent = initials;
+                document.getElementById('swapProfileIcon').textContent = initials;
+                document.getElementById('settingsProfileIcon').textContent = initials;
+                
+                // Mettre à jour les soldes
+                updateBalances();
+                
+                // Mettre à jour l'adresse wallet
+                document.getElementById('walletAddress').textContent = user.walletAddress;
+                
+                // Mettre à jour les transactions
+                updateTransactions();
+                
+                // Mettre à jour le profil dans les paramètres
+                document.getElementById('profileSetting').addEventListener('click', function() {
+                    alert(`Nom: ${user.name}\nEmail: ${user.email}\nAdresse USDT: ${user.walletAddress}\nDate d'inscription: ${new Date(user.createdAt).toLocaleDateString('fr-FR')}`);
+                });
+            }
+            
+            function updateBalances() {
+                const user = db.getCurrentUser();
+                if (!user) return;
+                
+                // Mettre à jour les soldes EUR
+                document.getElementById('eurBalance').textContent = formatCurrency(user.balances.eur, 'eur');
+                document.getElementById('dualEurBalance').textContent = formatCurrency(user.balances.eur, 'eur');
+                document.getElementById('chargerCurrentBalance').textContent = formatCurrency(user.balances.eur, 'eur');
+                document.getElementById('fromBalance').textContent = formatCurrency(user.balances.eur, 'eur');
+                
+                // Mettre à jour les soldes USDT
+                document.getElementById('dualUsdtBalance').textContent = formatCurrency(user.balances.usdt, 'usdt');
+                document.getElementById('walletUsdtBalance').textContent = formatCurrency(user.balances.usdt, 'usdt');
+                document.getElementById('toBalance').textContent = formatCurrency(user.balances.usdt, 'usdt');
+                
+                // Calculer la valeur en EUR des USDT
+                const usdtValueEur = user.balances.usdt / db.exchangeRate;
+                document.getElementById('walletUsdtEurValue').textContent = `≈ ${formatCurrency(usdtValueEur, 'eur')}`;
+                
+                // Mettre à jour le prix USDT
+                document.getElementById('usdtPrice').textContent = `$${db.exchangeRate.toFixed(2)}`;
+                document.getElementById('exchangeRateDisplay').textContent = `1 EUR = ${db.exchangeRate.toFixed(2)} USDT`;
+                document.getElementById('fromRate').textContent = db.exchangeRate.toFixed(2);
+                document.getElementById('toRate').textContent = (1 / db.exchangeRate).toFixed(2);
+                
+                // Simuler un changement de prix occasionnel
+                if (Math.random() < 0.3) {
+                    const newRate = db.simulatePriceChange();
+                    const change = ((newRate - 1.05) / 1.05) * 100;
+                    document.getElementById('usdtChange').textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                    document.getElementById('usdtChange').style.color = change >= 0 ? '#66ff99' : '#ff6699';
+                    document.getElementById('dualUsdtBalance').nextElementSibling.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                    document.getElementById('dualUsdtBalance').nextElementSibling.className = change >= 0 ? 'balance-change positive' : 'balance-change negative';
+                }
+            }
+            
+            function updateTransactions() {
+                const user = db.getCurrentUser();
+                if (!user) return;
+                
+                const transactions = db.getUserTransactions(user.id);
+                
+                // Mettre à jour les transactions récentes
+                const recentTransactionsContainer = document.getElementById('recentTransactions');
+                const usdtTransactionsContainer = document.getElementById('usdtTransactions');
+                
+                if (transactions.length === 0) {
+                    recentTransactionsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #a0a5d6;">
+                            <i class="fas fa-exchange-alt" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                            <p>Aucune transaction pour le moment</p>
+                        </div>
+                    `;
+                    usdtTransactionsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #a0a5d6;">
+                            <i class="fas fa-wallet" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                            <p>Aucune transaction USDT pour le moment</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Filtrer les transactions USDT
+                const usdtTransactions = transactions.filter(t => t.currency === 'usdt' || (t.type === 'exchange' && (t.description.includes('USDT') || t.description.includes('usdt'))));
+                
+                // Afficher les 5 dernières transactions générales
+                recentTransactionsContainer.innerHTML = transactions.slice(0, 5).map(transaction => {
+                    const isPositive = transaction.type === 'deposit' || (transaction.type === 'exchange' && transaction.description.includes('→ USDT'));
+                    const icon = transaction.type === 'deposit' ? 'fa-arrow-down' : 
+                                transaction.type === 'exchange' ? 'fa-exchange-alt' : 'fa-arrow-up';
+                    const iconColor = transaction.type === 'deposit' ? '#9d6dff' : 
+                                    transaction.type === 'exchange' ? '#ff6699' : '#66ff99';
+                    
+                    return `
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon" style="background: rgba(${iconColor === '#9d6dff' ? '93,0,255' : iconColor === '#ff6699' ? '255,51,102' : '51,204,102'},0.2); color: ${iconColor};">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>${transaction.description}</h4>
+                                    <p>${formatDate(transaction.timestamp)}</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount" style="color: ${isPositive ? '#66ff99' : '#ff6699'}">
+                                ${isPositive ? '+' : '-'}${formatCurrency(transaction.amount, transaction.currency)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Afficher les 5 dernières transactions USDT
+                usdtTransactionsContainer.innerHTML = usdtTransactions.slice(0, 5).map(transaction => {
+                    const isPositive = transaction.type === 'deposit' || (transaction.type === 'exchange' && transaction.description.includes('→ USDT'));
+                    const icon = transaction.type === 'deposit' ? 'fa-arrow-down' : 
+                                transaction.type === 'exchange' ? 'fa-exchange-alt' : 'fa-arrow-up';
+                    const iconColor = transaction.type === 'deposit' ? '#9d6dff' : 
+                                    transaction.type === 'exchange' ? '#ff6699' : '#66ff99';
+                    
+                    return `
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon" style="background: rgba(${iconColor === '#9d6dff' ? '93,0,255' : iconColor === '#ff6699' ? '255,51,102' : '51,204,102'},0.2); color: ${iconColor};">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>${transaction.description}</h4>
+                                    <p>${formatDate(transaction.timestamp)}</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount" style="color: ${isPositive ? '#66ff99' : '#ff6699'}">
+                                ${isPositive ? '+' : '-'}${formatCurrency(transaction.amount, transaction.currency)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                if (usdtTransactions.length === 0) {
+                    usdtTransactionsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #a0a5d6;">
+                            <i class="fas fa-wallet" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                            <p>Aucune transaction USDT pour le moment</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // ============================================
+            // NAVIGATION
+            // ============================================
+            
+            function showPage(pageId) {
+                // Masquer toutes les pages
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Afficher la page demandée
+                const pageElement = document.getElementById(`${pageId}Page`);
+                if (pageElement) {
+                    pageElement.classList.add('active');
+                    
+                    // Mettre à jour les données si nécessaire
+                    if (pageId === 'home' || pageId === 'portefeuille' || pageId === 'charger' || pageId === 'swapp') {
+                        updateBalances();
+                        if (pageId === 'home' || pageId === 'portefeuille') {
+                            updateTransactions();
+                        }
+                    }
+                }
+                
+                // Mettre à jour le menu actif
+                menuItems.forEach(item => {
+                    if (item.dataset.page === pageId) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Navigation par le menu du bas
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.dataset.page;
+                    showPage(pageId);
+                });
+            });
+            
+            // Navigation par les boutons d'action sur l'accueil
+            balanceActions.forEach(action => {
+                action.addEventListener('click', function() {
+                    const pageId = this.dataset.page;
+                    showPage(pageId);
+                });
+            });
+            
+            // Navigation par les boutons de retour
+            document.querySelectorAll('.back-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const pageId = this.dataset.page;
+                    showPage(pageId);
+                });
+            });
+            
+            // ============================================
+            // FONCTIONNALITÉS DE L'APPLICATION
+            // ============================================
+            
+            // Rafraîchissement des soldes
+            document.getElementById('refreshBalances').addEventListener('click', function() {
+                this.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    this.style.transform = 'rotate(0deg)';
+                }, 500);
+                
+                // Simuler un changement de prix
+                const newRate = db.simulatePriceChange();
+                updateBalances();
+                showNotification('Soldes et taux actualisés', 'success');
+            });
+            
+            // Gestion de la page Charger
+            document.querySelectorAll('.amount-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    // Retirer la sélection précédente
+                    document.querySelectorAll('.amount-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Sélectionner l'option cliquée
+                    this.classList.add('selected');
+                    const amount = this.dataset.amount;
+                    
+                    // Remplir le champ personnalisé
+                    document.getElementById('customAmount').value = amount;
+                });
+            });
+            
+            // Chargement personnalisé
+            document.getElementById('customCharger').addEventListener('click', function() {
+                const amountInput = document.getElementById('customAmount');
+                const amount = parseFloat(amountInput.value);
+                
+                if (!amount || amount <= 0) {
+                    showNotification('Veuillez entrer un montant valide', 'error');
+                    return;
+                }
+                
+                if (amount > 10000) {
+                    showNotification('Le montant maximum est de 10 000€ par transaction', 'error');
+                    return;
+                }
+                
+                const user = db.getCurrentUser();
+                if (!user) {
+                    showNotification('Utilisateur non connecté', 'error');
+                    return;
+                }
+                
+                // Simuler un chargement Stripe
+                showNotification(`Chargement de ${formatCurrency(amount, 'eur')} initié...`, 'info');
+                
+                // Simuler le traitement
+                setTimeout(() => {
+                    // Mettre à jour le solde
+                    db.updateUserBalance(user.id, 'eur', amount);
+                    
+                    // Ajouter la transaction
+                    db.addTransaction(user.id, 'deposit', amount, 'eur', 'Chargement par carte Stripe');
+                    
+                    // Mettre à jour l'affichage
+                    updateBalances();
+                    updateTransactions();
+                    
+                    showNotification(`Paiement réussi ! Votre compte a été crédité de ${formatCurrency(amount, 'eur')}.`, 'success');
+                    
+                    // Revenir à l'accueil
+                    showPage('home');
+                }, 2000);
+            });
+            
+            // Chargement via option Stripe
+            document.getElementById('stripeOption').addEventListener('click', function() {
+                const selectedAmount = document.querySelector('.amount-option.selected');
+                let amount = 100; // Valeur par défaut
+                
+                if (selectedAmount) {
+                    amount = parseFloat(selectedAmount.dataset.amount);
+                }
+                
+                const user = db.getCurrentUser();
+                if (!user) {
+                    showNotification('Utilisateur non connecté', 'error');
+                    return;
+                }
+                
+                // Simuler un chargement Stripe
+                showNotification(`Chargement de ${formatCurrency(amount, 'eur')} initié...`, 'info');
+                
+                // Simuler le traitement
+                setTimeout(() => {
+                    // Mettre à jour le solde
+                    db.updateUserBalance(user.id, 'eur', amount);
+                    
+                    // Ajouter la transaction
+                    db.addTransaction(user.id, 'deposit', amount, 'eur', 'Chargement par carte Stripe');
+                    
+                    // Mettre à jour l'affichage
+                    updateBalances();
+                    updateTransactions();
+                    
+                    showNotification(`Paiement réussi ! Votre compte a été crédité de ${formatCurrency(amount, 'eur')}.`, 'success');
+                    
+                    // Revenir à l'accueil
+                    showPage('home');
+                }, 2000);
+            });
+            
+            // Gestion de la page Recevoir
+            document.getElementById('copyAddress').addEventListener('click', function() {
+                const address = document.getElementById('walletAddress').textContent;
+                navigator.clipboard.writeText(address).then(() => {
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i> Adresse copiée';
+                    showNotification('Adresse copiée dans le presse-papier', 'success');
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                    }, 2000);
+                });
+            });
+            
+            // ============================================
+            // GESTION DES ÉCHANGES (SWAP)
+            // ============================================
+            
+            const fromAmount = document.getElementById('fromAmount');
+            const toAmount = document.getElementById('toAmount');
+            const swapDirection = document.getElementById('swapDirection');
+            const fromCurrency = document.getElementById('fromCurrency');
+            const toCurrency = document.getElementById('toCurrency');
+            const feeAmount = document.getElementById('feeAmount');
+            const netAmount = document.getElementById('netAmount');
+            
+            let isEurToUsdt = true; // Par défaut: EUR → USDT
+            
+            function updateExchangeCalculation() {
+                const fromValue = parseFloat(fromAmount.value) || 0;
+                
+                if (fromValue <= 0) {
+                    toAmount.value = '0';
+                    feeAmount.textContent = '€0,00';
+                    netAmount.textContent = '0,00 USDT';
+                    return;
+                }
+                
+                const exchange = db.calculateExchange(
+                    fromValue,
+                    isEurToUsdt ? 'eur' : 'usdt',
+                    isEurToUsdt ? 'usdt' : 'eur'
+                );
+                
+                toAmount.value = exchange.netAmount.toFixed(2);
+                feeAmount.textContent = isEurToUsdt ? 
+                    `${formatCurrency(exchange.fee / db.exchangeRate, 'eur')}` : 
+                    `${formatCurrency(exchange.fee * db.exchangeRate, 'usdt')}`;
+                netAmount.textContent = isEurToUsdt ? 
+                    `${exchange.netAmount.toFixed(2)} USDT` : 
+                    `${formatCurrency(exchange.netAmount, 'eur')}`;
+            }
+            
+            fromAmount.addEventListener('input', updateExchangeCalculation);
+            
+            swapDirection.addEventListener('click', function() {
+                // Inverser les devises
+                isEurToUsdt = !isEurToUsdt;
+                
+                const fromText = fromCurrency.querySelector('div').textContent;
+                const toText = toCurrency.querySelector('div').textContent;
+                
+                fromCurrency.querySelector('div').textContent = toText;
+                toCurrency.querySelector('div').textContent = fromText;
+                
+                // Mettre à jour les labels de solde
+                const user = db.getCurrentUser();
+                if (user) {
+                    if (isEurToUsdt) {
+                        document.getElementById('fromBalance').textContent = formatCurrency(user.balances.eur, 'eur');
+                        document.getElementById('toBalance').textContent = formatCurrency(user.balances.usdt, 'usdt');
+                    } else {
+                        document.getElementById('fromBalance').textContent = formatCurrency(user.balances.usdt, 'usdt');
+                        document.getElementById('toBalance').textContent = formatCurrency(user.balances.eur, 'eur');
+                    }
+                }
+                
+                // Mettre à jour le taux affiché
+                document.getElementById('exchangeRateDisplay').textContent = isEurToUsdt ? 
+                    `1 EUR = ${db.exchangeRate.toFixed(2)} USDT` : 
+                    `1 USDT = ${(1 / db.exchangeRate).toFixed(2)} EUR`;
+                
+                // Réinitialiser les montants
+                fromAmount.value = '0';
+                toAmount.value = '0';
+                feeAmount.textContent = isEurToUsdt ? '€0,00' : '0,00 USDT';
+                netAmount.textContent = isEurToUsdt ? '0,00 USDT' : '€0,00';
+            });
+            
+            // Confirmation d'échange
+            document.getElementById('confirmSwap').addEventListener('click', function() {
+                const fromValue = parseFloat(fromAmount.value) || 0;
+                
+                if (fromValue <= 0) {
+                    showNotification('Veuillez entrer un montant valide', 'error');
+                    return;
+                }
+                
+                const user = db.getCurrentUser();
+                if (!user) {
+                    showNotification('Utilisateur non connecté', 'error');
+                    return;
+                }
+                
+                // Vérifier le solde
+                if (isEurToUsdt && user.balances.eur < fromValue) {
+                    showNotification('Solde EUR insuffisant', 'error');
+                    return;
+                }
+                if (!isEurToUsdt && user.balances.usdt < fromValue) {
+                    showNotification('Solde USDT insuffisant', 'error');
+                    return;
+                }
+                
+                // Effectuer l'échange
+                const result = db.performExchange(
+                    user.id,
+                    fromValue,
+                    isEurToUsdt ? 'eur' : 'usdt',
+                    isEurToUsdt ? 'usdt' : 'eur'
+                );
+                
+                if (result.success) {
+                    showNotification(`Échange réussi ! ${formatCurrency(fromValue, isEurToUsdt ? 'eur' : 'usdt')} → ${formatCurrency(result.toAmount, isEurToUsdt ? 'usdt' : 'eur')}`, 'success');
+                    
+                    // Mettre à jour l'affichage
+                    updateBalances();
+                    updateTransactions();
+                    
+                    // Réinitialiser les champs
+                    fromAmount.value = '0';
+                    toAmount.value = '0';
+                    feeAmount.textContent = isEurToUsdt ? '€0,00' : '0,00 USDT';
+                    netAmount.textContent = isEurToUsdt ? '0,00 USDT' : '€0,00';
+                    
+                    // Revenir à l'accueil après un délai
+                    setTimeout(() => {
+                        showPage('home');
+                    }, 1500);
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            });
+            
+            // Mettre à jour le calcul quand le taux change
+            setInterval(() => {
+                if (document.getElementById('swappPage').classList.contains('active')) {
+                    updateExchangeCalculation();
+                }
+            }, 5000);
+            
+            // ============================================
+            // DÉCONNEXION
+            // ============================================
+            
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    // Déconnecter l'utilisateur
+                    db.logout();
+                    
+                    // Masquer toutes les pages
+                    pages.forEach(page => {
+                        page.classList.remove('active');
+                    });
+                    
+                    // Afficher l'écran de connexion
+                    loginScreen.style.display = 'flex';
+                    loginScreen.classList.add('fade-in');
+                    
+                    // Réinitialiser les champs
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    
+                    showNotification('Déconnexion réussie', 'success');
+                }
+            });
+            
+            // ============================================
+            // GRAPHIQUE CRYPTO
+            // ============================================
+            
+            function initChart() {
+                const ctx = document.getElementById('cryptoChart').getContext('2d');
+                
+                if (cryptoChart) {
+                    cryptoChart.destroy();
+                }
+                
+                // Données simulées pour le graphique
+                const basePrice = db.exchangeRate;
+                const data = [];
+                for (let i = 0; i < 24; i++) {
+                    const variation = (Math.random() - 0.5) * 0.02;
+                    data.push(basePrice * (1 + variation));
+                }
+                
+                cryptoChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 24}, (_, i) => `${i}h`),
+                        datasets: [{
+                            label: 'USDT',
+                            data: data,
+                            borderColor: '#66ff99',
+                            backgroundColor: 'rgba(102, 255, 153, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#66ff99',
+                            pointRadius: 2,
+                            pointHoverRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(26, 29, 78, 0.9)',
+                                titleColor: '#a0a5d6',
+                                bodyColor: '#ffffff',
+                                borderColor: '#5d00ff',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `USDT: $${context.parsed.y.toFixed(4)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#a0a5d6',
+                                    maxTicksLimit: 8
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(160, 165, 214, 0.1)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#a0a5d6',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                },
+                                suggestedMin: basePrice * 0.98,
+                                suggestedMax: basePrice * 1.02
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'nearest'
+                        }
+                    }
+                });
+                
+                // Mettre à jour le graphique périodiquement
+                setInterval(() => {
+                    if (cryptoChart && document.getElementById('portefeuillePage').classList.contains('active')) {
+                        const newPrice = db.simulatePriceChange();
+                        cryptoChart.data.datasets[0].data.push(newPrice);
+                        cryptoChart.data.datasets[0].data.shift();
+                        cryptoChart.update('none');
+                        
+                        // Mettre à jour l'affichage du prix
+                        document.getElementById('usdtPrice').textContent = `$${newPrice.toFixed(2)}`;
+                        updateBalances();
+                    }
+                }, 10000);
+            }
+        });
+    </script>
+</body>
+</html>
